@@ -1,11 +1,15 @@
+export interface Horloge {
+  récupérerDate(): Date;
+}
+
 export class Transaction {
-    date: string;
+    date: Date;
     montant: number;
     solde: number;
+    horloge: Horloge
 
-    constructor(montant: number, solde: number) {
-        const date_du_jour = new Date();
-        this.date = date_du_jour.toLocaleDateString('fr-FR');
+    constructor(montant: number, solde: number, horloge: Horloge) {
+        this.date = horloge.récupérerDate();
         this.montant = montant;
         this.solde = solde;
     }
@@ -14,18 +18,19 @@ export class Transaction {
 export default class Compte {
     solde: number;
     historique: Transaction[];
-    
+    horloge: Horloge
 
-    constructor(solde_initial = 0) {
+    constructor(horloge: Horloge = null, solde_initial = 0) {
         this.solde = solde_initial;
         this.historique = [];
+        this.horloge = horloge;
     }
 
     depot(montant: number) {
         if (montant < 0)
           return "Montant invalide"
         this.solde += montant;
-        const transaction = new Transaction (montant, this.solde)
+        const transaction = new Transaction (montant, this.solde, this.horloge)
         this.historique.push(transaction)
     }
 
@@ -35,5 +40,25 @@ export default class Compte {
         if (this.solde - montant < -100)
           return "Vous êtes à découvert"
         this.solde -= montant;
+        const transaction = new Transaction (-montant, this.solde, this.horloge)
+        this.historique.push(transaction)
     }
 }
+
+/* export type ActionBancaire = "solde" | "dépot" | "retrait" | "historique";
+
+export class ApplicationBancaire {
+    message: string
+    page: string
+
+    constructor() {
+      this.message = "Bienvenue sur votre application bancaire."
+      this.page = "acceuil"
+    }
+
+    choisirAction(action: ActionBancaire){
+      return null;
+    }
+
+
+} */
