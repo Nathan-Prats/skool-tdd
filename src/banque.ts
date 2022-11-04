@@ -44,21 +44,3 @@ export default class Compte {
         this.historique.push(transaction)
     }
 }
-
-/* export type ActionBancaire = "solde" | "dépot" | "retrait" | "historique";
-
-export class ApplicationBancaire {
-    message: string
-    page: string
-
-    constructor() {
-      this.message = "Bienvenue sur votre application bancaire."
-      this.page = "acceuil"
-    }
-
-    choisirAction(action: ActionBancaire){
-      return null;
-    }
-
-
-} */
