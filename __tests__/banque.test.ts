@@ -2,14 +2,16 @@ import 'jest';
 import Compte, { Horloge, Transaction } from '../src/banque'
 
 class HorlogeTest implements Horloge {
-  date: Date = new Date(0);
+  dates: Date[] = [new Date()];
+  index: number = 0;
 
   définirDate(nouvelleDate: Date){
-    this.date = nouvelleDate
+    this.dates.push(nouvelleDate);
   }
 
   récupérerDate(): Date {
-    return new Date(this.date);
+    if (this.index < this.dates.length - 1) return new Date(this.dates[this.index++]);
+    return new Date(this.dates[this.index]);
   }
   
 }
@@ -68,7 +70,7 @@ describe('Ma Banque', () => {
     //Then
     expect(historique).toEqual([transaction])
     expect(solde).toBe(solde_attendu)
-    const dateAttendue = new Date(horloge.date);
+    const dateAttendue = new Date(horloge.dates[horloge.index]);
     expect(historique[0].date).toEqual(dateAttendue);
     })
 
@@ -106,12 +108,12 @@ describe('Ma Banque', () => {
     test("Je fais deux dépôts successifs et les dates sont différentes", () => {
       //Given
       const compte = new Compte(horloge);
-      //When
       const date_transaction_1 = new Date();
       horloge.définirDate(date_transaction_1)
-      compte.depot(100);
       const date_transaction_2 = new Date();
       horloge.définirDate(date_transaction_2)
+      //When
+      compte.depot(100);
       compte.depot(250);
       //Then
       expect(compte.historique[0].date).not.toBe(compte.historique[1].date)
