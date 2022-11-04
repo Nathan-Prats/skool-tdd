@@ -2,11 +2,22 @@ export interface Horloge {
   récupérerDate(): Date;
 }
 
+export interface TransfertBancaireExterieur {
+  transfert(requete: RequeteTransfertExterieur): string;
+}
+
+export type RequeteTransfertExterieur = {
+  ibanFrom: string,
+  ibanTo: string,
+  amount: number,
+}
+
 export class Transaction {
     date: Date;
     montant: number;
     solde: number;
-    horloge: Horloge
+    horloge: Horloge;
+
 
     constructor(montant: number, solde: number, horloge: Horloge) {
         this.date = horloge.récupérerDate();
@@ -18,12 +29,14 @@ export class Transaction {
 export default class Compte {
     solde: number;
     historique: Transaction[];
-    horloge: Horloge
+    horloge: Horloge;
+    transfertBancaire: TransfertBancaireExterieur;
 
-    constructor(horloge: Horloge = null, solde_initial = 0) {
+    constructor(horloge: Horloge = null, solde_initial = 0, transfertBancaire: TransfertBancaireExterieur = null) {
         this.solde = solde_initial;
         this.historique = [];
         this.horloge = horloge;
+        this.transfertBancaire = transfertBancaire;
     }
 
     depot(montant: number) {
@@ -42,5 +55,12 @@ export default class Compte {
         this.solde -= montant;
         const transaction = new Transaction (-montant, this.solde, this.horloge)
         this.historique.push(transaction)
+    }
+
+    transfertExterieur(requete: RequeteTransfertExterieur) {
+      const réponseRequete = this.transfertBancaire.transfert(requete);
+      if (réponseRequete == "202")
+         this.retrait(requete.amount);
+      return réponseRequete
     }
 }

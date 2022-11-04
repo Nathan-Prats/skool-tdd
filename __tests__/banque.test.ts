@@ -1,5 +1,5 @@
 import 'jest';
-import Compte, { Horloge, Transaction } from '../src/banque'
+import Compte, { Horloge, TransfertBancaireExterieur, Transaction, RequeteTransfertExterieur } from '../src/banque'
 
 class HorlogeTest implements Horloge {
   dates: Date[] = [new Date()];
@@ -14,6 +14,18 @@ class HorlogeTest implements Horloge {
     return new Date(this.dates[this.index]);
   }
   
+}
+
+class TransfertBancaireExterieurInvalideTest implements TransfertBancaireExterieur {
+  transfert(): string {
+    return "400"
+  }
+}
+
+class TransfertBancaireExterieurValideTest implements TransfertBancaireExterieur {
+  transfert(): string {
+      return "202";
+  }
 }
 
 describe('Ma Banque', () => {
@@ -117,6 +129,29 @@ describe('Ma Banque', () => {
       compte.depot(250);
       //Then
       expect(compte.historique[0].date).not.toBe(compte.historique[1].date)
+    })
+
+    test("J'essaye de faire un transfert avec des données invalides, et ca retourne une erreur", () => {
+      //Given
+      const transfertBancaireExterieur = new TransfertBancaireExterieurInvalideTest();
+      const compte = new Compte(horloge, 0, transfertBancaireExterieur);
+      //When
+      const requeteVide: RequeteTransfertExterieur = {ibanFrom: "", ibanTo: "", amount: 0}
+      const message_transfert = compte.transfertExterieur(requeteVide);
+      //Then
+      expect(message_transfert).toBe("400");
+    })
+
+    test("Je peux faire un transfert à un compte extérieur d'un montant de 200€, je recois une 202 en réponse et mon compte est débité", () => {
+      //Given
+      const transfertBancaireExterieur = new TransfertBancaireExterieurValideTest();
+      const compte = new Compte(horloge, 200, transfertBancaireExterieur);
+      //When
+      const requete: RequeteTransfertExterieur = {ibanFrom: "XX", ibanTo: "YY", amount: 200}
+      const message_transfert = compte.transfertExterieur(requete);
+      //Then
+      expect(message_transfert).toBe("202");
+      expect(compte.solde).toBe(0);
     })
 
   })
